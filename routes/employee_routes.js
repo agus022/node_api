@@ -3,17 +3,28 @@ const {ObjectId} = require('mongodb')
 const db = require('../libs/database')
 const router = express.Router()
 
-router.get('/employees', async (req, res) => {
-    const employees = await db.collection('Employees').find().toArray();
-    res.status(200).json(employees)
-})   
 router.get('/api/v1/employees', async (req, res)=>{
     const employees = await db.collection('Employees').find().toArray()
-    res.status(200).json(employees);
+    res.status(200).json({"data":employees});
 })
 
-router.get('/api/v1/employees/:emp_no', async (req, res) => {
-    const employees = await db.collection('Employees').find({"emp_number": parseInt(req.params.emp_no)}).toArray()
+router.get('/api/v1/employees_gender', async (req, res)=>{
+    try {
+        let query = {};
+        if (req.query.gender) {
+            query.gender = { $regex: new RegExp("^" + req.query.gender + "$", "i") }; //ignorar mayus para la busqueda 
+        }
+
+        const employees = await db.collection('Employees').find(query).toArray();
+        res.status(200).json({ "data": employees });
+    } catch (error) {
+        console.log("Error en la API:", error);
+        res.status(500).json({ "error": "Error fetching employees" });
+    }
+})
+
+router.get('/api/v1/employees/:id', async (req, res) => {
+    const employees = await db.collection('Employees').find({"id": parseInt(req.params.id)}).toArray()
     res.send(employees)
 })
 
@@ -35,13 +46,12 @@ router.get('/api/v1/employees/gender/:gender/department/:depto', async (req, res
 })
 
 router.post('/api/v1/employees', async function (req, res) {
-
     try {
         const emp = await db.collection('Employees')
-        const lastEmp = await emp.find().sort({"emp_number":-1}).limit(1).toArray()
-        const emp_no = lastEmp[0].emp_number + 1
+        const lastEmp = await emp.find().sort({"id":-1}).limit(1).toArray()
+        const id = lastEmp[0].id + 1
         const newEmployee = {
-            "emp_number" : emp_no,
+            "id" : id,
             ...req.body
         }
    
