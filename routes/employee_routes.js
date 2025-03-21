@@ -8,6 +8,7 @@ router.get('/api/v1/employees', async (req, res)=>{
     res.status(200).json({"data":employees});
 })
 
+//ruta para usar el select2
 router.get('/api/v1/employees_gender', async (req, res)=>{
     try {
         let query = {};
@@ -22,6 +23,7 @@ router.get('/api/v1/employees_gender', async (req, res)=>{
         res.status(500).json({ "error": "Error fetching employees" });
     }
 })
+
 
 router.get('/api/v1/employees/:id', async (req, res) => {
     const employees = await db.collection('Employees').find({"id": parseInt(req.params.id)}).toArray()
